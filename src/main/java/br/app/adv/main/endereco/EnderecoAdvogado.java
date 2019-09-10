@@ -25,7 +25,7 @@ public class EnderecoAdvogado extends EnderecoCep implements Serializable{
 		@JoinColumn(name = "cep_id_cep", referencedColumnName = "cep_id")
 		private Cep cep;
 		@ManyToOne
-		@JoinColumn(name = "advogado_id_advogado", referencedColumnName = "advogado_id")
+		@JoinColumn(name = "pessoa_id_advogado", referencedColumnName = "pessoa_id")
 		private AdvogadoUser advUser;
 		public Cep getCep() {
 			return cep;

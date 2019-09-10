@@ -10,14 +10,19 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -35,11 +40,14 @@ import br.app.adv.main.person.Person;
 @JsonIgnoreProperties(value = {"dataUpdate", "dataCreated"}, allowGetters = true)
 @EntityListeners(AuditingEntityListener.class)
 public class AdvogadoUser implements Serializable{
-	private static final long serialVersionUID = 835443519142396616L;
+
+	private static final long serialVersionUID = 2350624813475789419L;
 
 	@Id
-	@Column(name="pessoa_id_pessoa", nullable = false)
-	private long id;
+	@Column(name="pessoa_id", nullable = false, unique = true)
+	@GeneratedValue(generator = "foreign")
+	@GenericGenerator(name = "foreign", strategy = "foreign", parameters =  @Parameter(name = "property", value = "pessoa"))
+	private Long id;
 	
 	@Column(name="numero_oab")
 	private String numeroOab;
@@ -53,11 +61,13 @@ public class AdvogadoUser implements Serializable{
 	@Column(name="rate")
 	private int rate;
 	
-	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "pessoa_id_pessoa", referencedColumnName = "pessoa_id")
+	@OneToOne(cascade = {CascadeType.MERGE, CascadeType.REMOVE, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+    //@JoinColumn(name = "pessoa_id", insertable = true, referencedColumnName = "pessoa_id")
+	@PrimaryKeyJoinColumn(name="pessoa_id", referencedColumnName = "pessoa_id")
 	private Person pessoa;
 	
 	@OneToMany(mappedBy="idPk.advUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@Fetch(FetchMode.JOIN)
 	private List<EnderecoAdvogado> endereco = new ArrayList<>();
 	
 	@Column(name="valided")
@@ -72,6 +82,20 @@ public class AdvogadoUser implements Serializable{
 	@Temporal(TemporalType.TIMESTAMP)
 	@CreatedDate
 	private Date dataCreated;
+		
+	public AdvogadoUser(Long id) {
+		super();
+		this.id = id;
+	}
+
+	public AdvogadoUser(Person pessoa) {
+		super();
+		this.pessoa = pessoa;
+	}
+
+	public AdvogadoUser() {
+		super();
+	}
 
 	public String getNumeroOab() {
 		return numeroOab;
@@ -113,7 +137,7 @@ public class AdvogadoUser implements Serializable{
 		this.dataCreated = dataCreated;
 	}
 
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
 
@@ -144,18 +168,24 @@ public class AdvogadoUser implements Serializable{
 		return dataUpdate;
 	}
 
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((dataCreated == null) ? 0 : dataCreated.hashCode());
+		result = prime * result + ((dataUpdate == null) ? 0 : dataUpdate.hashCode());
+		result = prime * result + ((descricao == null) ? 0 : descricao.hashCode());
+		result = prime * result + ((endereco == null) ? 0 : endereco.hashCode());
 		result = prime * result + ((estadoOab == null) ? 0 : estadoOab.hashCode());
-		result = prime * result + (int) (id ^ (id >>> 32));
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((numeroOab == null) ? 0 : numeroOab.hashCode());
+		result = prime * result + ((pessoa == null) ? 0 : pessoa.hashCode());
+		result = prime * result + rate;
+		result = prime * result + (valided ? 1231 : 1237);
 		return result;
 	}
 
@@ -173,18 +203,45 @@ public class AdvogadoUser implements Serializable{
 				return false;
 		} else if (!dataCreated.equals(other.dataCreated))
 			return false;
+		if (dataUpdate == null) {
+			if (other.dataUpdate != null)
+				return false;
+		} else if (!dataUpdate.equals(other.dataUpdate))
+			return false;
+		if (descricao == null) {
+			if (other.descricao != null)
+				return false;
+		} else if (!descricao.equals(other.descricao))
+			return false;
+		if (endereco == null) {
+			if (other.endereco != null)
+				return false;
+		} else if (!endereco.equals(other.endereco))
+			return false;
 		if (estadoOab == null) {
 			if (other.estadoOab != null)
 				return false;
 		} else if (!estadoOab.equals(other.estadoOab))
 			return false;
-		if (id != other.id)
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
 			return false;
 		if (numeroOab == null) {
 			if (other.numeroOab != null)
 				return false;
 		} else if (!numeroOab.equals(other.numeroOab))
 			return false;
+		if (pessoa == null) {
+			if (other.pessoa != null)
+				return false;
+		} else if (!pessoa.equals(other.pessoa))
+			return false;
+		if (rate != other.rate)
+			return false;
+		if (valided != other.valided)
+			return false;
 		return true;
-	}	
+	}
 }

@@ -95,11 +95,6 @@ public class AuthenticationRestController {
 	public ResponseEntity<?> cadastrarPessoa(HttpServletRequest request,@RequestBody @Valid Person pessoa, @Valid @PathVariable("tipoUser") String tipoUser, 
 			@Valid @RequestParam("mobileid") String mobileid, @Valid @RequestParam("modelo") String modelo) 
 			throws InvalidValueSqlException, NotEmptySqlException {
-		//ObjectMapper mapper = new ObjectMapper();
-		//Person pessoa = new Person();
-		//pessoa = @Valid mapper.convertValue(body.get("pessoa"), Person.class) ;
-		//String tipoUser = body.get("tipoUser").toString().toLowerCase();
-		System.out.println("oi "+pessoa.getEmail()+" "+tipoUser+" "+pessoa.getSenha());
 		final CurrentUser currentUser;
 		JwtUser jwt = userAuth.getJwtUserAuthentication();
 		String email;

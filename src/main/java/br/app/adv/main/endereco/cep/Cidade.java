@@ -15,14 +15,14 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 @Entity
-@Table(name = "estados")
+@Table(name = "cidades")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Cidade {
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="cidades_id")
-	private long id;
+	private Long id;
 	
 	@Column(name="nome")
 	private String nome;
@@ -47,7 +47,7 @@ public class Cidade {
 		this.estado = estado;
 	}
 
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
 }

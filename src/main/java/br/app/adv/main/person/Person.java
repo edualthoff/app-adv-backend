@@ -22,6 +22,8 @@ import javax.persistence.TemporalType;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -41,23 +43,17 @@ import br.app.adv.main.upload.UploadFile;
 @JsonIgnoreProperties(value = {"dataUpdate", "dataSession"}, allowGetters = true)
 @EntityListeners(AuditingEntityListener.class)
 public class Person implements Serializable{
-	private static final long serialVersionUID = -1147497537461341724L;
+	private static final long serialVersionUID = 749666508465367900L;
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="pessoa_id")
-	private long id;
+	private Long id;
 	
 	@NotBlank(message = "{name.not.blank}")
 	@Column(name="nome_comp")
 	private String nomeCompleto;
-	/** Removido
-	@Column(name="primeiro_nome")
-	private String primeiroNome;
-	
-	@Column(name="ultimo_nome")
-	private String ultimoNome;
-	**/
+
 	@Column(name="data_nasc")
 	private Date data_nasc;
 	
@@ -83,7 +79,9 @@ public class Person implements Serializable{
 	           inverseJoinColumns={@JoinColumn(name = "telefone_id_telefone")})
 	private List<Telefone> telefones = new ArrayList<>(); 
 	
-	@OneToMany(mappedBy = "person", orphanRemoval = true, cascade = {CascadeType.MERGE, CascadeType.REMOVE}, fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "pessoa",
+			orphanRemoval = true, cascade = {CascadeType.MERGE, CascadeType.REMOVE}, fetch = FetchType.LAZY)
+	@Fetch(FetchMode.JOIN)
 	private List<AuthRoles> authRole = new ArrayList<>();
 	
 	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -112,10 +110,11 @@ public class Person implements Serializable{
 	}
 	public Person() {
 	}
-	public long getId() {
+
+	public Long getId() {
 		return id;
 	}
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 	public Date getData_nasc() {
@@ -191,14 +190,9 @@ public class Person implements Serializable{
 		result = prime * result + ((authRole == null) ? 0 : authRole.hashCode());
 		result = prime * result + ((cpf == null) ? 0 : cpf.hashCode());
 		result = prime * result + ((dataCreated == null) ? 0 : dataCreated.hashCode());
-		result = prime * result + ((data_nasc == null) ? 0 : data_nasc.hashCode());
+		result = prime * result + ((dataUpdate == null) ? 0 : dataUpdate.hashCode());
 		result = prime * result + ((email == null) ? 0 : email.hashCode());
-		result = prime * result + (int) (id ^ (id >>> 32));
-		result = prime * result + ((imagemPerfil == null) ? 0 : imagemPerfil.hashCode());
-		result = prime * result + ((nomeCompleto == null) ? 0 : nomeCompleto.hashCode());
-		result = prime * result + ((senha == null) ? 0 : senha.hashCode());
-		result = prime * result + ((sexo == null) ? 0 : sexo.hashCode());
-		result = prime * result + ((telefones == null) ? 0 : telefones.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + (verificado ? 1231 : 1237);
 		return result;
 	}
@@ -226,42 +220,20 @@ public class Person implements Serializable{
 				return false;
 		} else if (!dataCreated.equals(other.dataCreated))
 			return false;
-		if (data_nasc == null) {
-			if (other.data_nasc != null)
+		if (dataUpdate == null) {
+			if (other.dataUpdate != null)
 				return false;
-		} else if (!data_nasc.equals(other.data_nasc))
+		} else if (!dataUpdate.equals(other.dataUpdate))
 			return false;
 		if (email == null) {
 			if (other.email != null)
 				return false;
 		} else if (!email.equals(other.email))
 			return false;
-		if (id != other.id)
-			return false;
-		if (imagemPerfil == null) {
-			if (other.imagemPerfil != null)
+		if (id == null) {
+			if (other.id != null)
 				return false;
-		} else if (!imagemPerfil.equals(other.imagemPerfil))
-			return false;
-		if (nomeCompleto == null) {
-			if (other.nomeCompleto != null)
-				return false;
-		} else if (!nomeCompleto.equals(other.nomeCompleto))
-			return false;
-		if (senha == null) {
-			if (other.senha != null)
-				return false;
-		} else if (!senha.equals(other.senha))
-			return false;
-		if (sexo == null) {
-			if (other.sexo != null)
-				return false;
-		} else if (!sexo.equals(other.sexo))
-			return false;
-		if (telefones == null) {
-			if (other.telefones != null)
-				return false;
-		} else if (!telefones.equals(other.telefones))
+		} else if (!id.equals(other.id))
 			return false;
 		if (verificado != other.verificado)
 			return false;

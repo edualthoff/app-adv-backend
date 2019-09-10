@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import br.app.adv.main.security.auth.session.AuthSessionActive;
@@ -21,7 +22,7 @@ import br.app.adv.main.security.model.CurrentUser;
  */
 @Component
 public class AccountMain implements Serializable {
-	private static final long serialVersionUID = 5969735010887244725L;
+	private static final long serialVersionUID = -8818870614052607730L;
 
 	private static final Logger log = LogManager.getLogger(AccountMain.class);
 	
@@ -39,5 +40,9 @@ public class AccountMain implements Serializable {
 		final String token = jwtTokenUtil.generateToken(userDetails, session.getId());
 		
 		return new CurrentUser(token);
+	}
+	public String encriptyPass(String senha) {
+		BCryptPasswordEncoder bc = new BCryptPasswordEncoder();
+		return bc.encode(senha);
 	}
 }

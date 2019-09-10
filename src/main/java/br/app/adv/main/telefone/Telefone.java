@@ -16,8 +16,8 @@ public class Telefone implements Serializable{
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	@Column(name="telefone_id")
-	private long id;
+	@Column(name="telefone_id", unique = true)
+	private Long id;
 	
 	@Column(name="numero")
 	private long numero;
@@ -56,7 +56,7 @@ public class Telefone implements Serializable{
 		this.preferencia = preferencia;
 	}
 
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
 	public boolean isVerificado() {

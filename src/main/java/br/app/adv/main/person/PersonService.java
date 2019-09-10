@@ -17,7 +17,7 @@ public class PersonService implements Serializable{
 	public Person getConsultaEmail(String email) {
 		return this.personDAO.findByEmail(email);
 	}
-	public Person setSalvarPessoa(Person p) {
+	public Person salvarPessoa(Person p) {
 		return this.personDAO.save(p);
 	}
 }

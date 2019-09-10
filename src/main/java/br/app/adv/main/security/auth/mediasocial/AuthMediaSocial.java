@@ -6,10 +6,14 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 
 import br.app.adv.main.person.Person;
 
@@ -19,7 +23,9 @@ public class AuthMediaSocial implements Serializable{
 	private static final long serialVersionUID = -2760579984970887542L;
 
 	@Id
-	@Column(name="pessoa_id_pessoa", nullable = false)
+	@Column(name="pessoa_id_pessoa", nullable = false, unique = true)
+	@GeneratedValue(generator = "foreign")
+	@GenericGenerator(name = "foreign", strategy = "foreign", parameters =  @Parameter(name = "property", value = "pessoa"))
 	private long id;
 
 	@Column(name="tipo")
@@ -29,7 +35,7 @@ public class AuthMediaSocial implements Serializable{
 	private long userId;
 	
 	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "pessoa_id_pessoa", referencedColumnName = "pessoa_id")
+	@PrimaryKeyJoinColumn(name="pessoa_id_pessoa", referencedColumnName = "pessoa_id")
 	private Person pessoa;
 
 	public AuthMediaSocial(String tipo, long userId) {

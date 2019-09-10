@@ -22,10 +22,10 @@ public class JwtUserFactory {
 	private static final Logger log = LogManager.getLogger(JwtUserFactory.class);
 	private JwtUserFactory() {}
 
-	public static JwtUser create(Person person, long id) {
+	public static JwtUser create(Person person) {
 		log.debug("Id Usuario / Person {}", person.getId());
 
-		return new JwtUser(id,
+		return new JwtUser(person.getId(),
 					person.getEmail(),
 					person.getSenha(),
 					person.isVerificado(),

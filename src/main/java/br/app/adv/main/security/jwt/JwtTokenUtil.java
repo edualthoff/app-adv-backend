@@ -2,7 +2,10 @@ package br.app.adv.main.security.jwt;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -32,7 +35,7 @@ import io.jsonwebtoken.UnsupportedJwtException;
 
 @Component
 public class JwtTokenUtil implements Serializable {
-	private static final long serialVersionUID = -3915217797039862867L;
+	private static final long serialVersionUID = 4352921686298463081L;
 
 	private static final Logger log = LogManager.getLogger(JwtTokenUtil.class);
 
@@ -62,7 +65,8 @@ public class JwtTokenUtil implements Serializable {
 		return username;
 	}
 
-	// Separa a data que vai expirar o token (Expiration Date) do token. @Param token
+	// Separa a data que vai expirar o token (Expiration Date) do token. @Param
+	// token
 	public Date getExpirationDateFromToken(String token) {
 		Date expiration;
 		try {
@@ -102,16 +106,21 @@ public class JwtTokenUtil implements Serializable {
 		return expiration.before(new Date());
 	}
 
-	public String generateToken(UserDetails userDetails, long mobileId) {
+	public String generateToken(UserDetails userDetails, Long sessionId) {
 		Map<String, Object> claims = new HashMap<>();
-		
-		claims.put(CLAIM_KEY_ID, ((JwtUser) userDetails).getId());
 		log.debug("Id Usuario / Person generateToken, {}", ((JwtUser) userDetails).getId());
+
+		claims.put(CLAIM_KEY_ID, ((JwtUser) userDetails).getId().longValue());
 		claims.put(CLAIM_KEY_USERNAME, userDetails.getUsername());
 		claims.put(CLAIM_KEY_PASS, userDetails.getAuthorities());
 		claims.put(CLAIM_KEY_VERIFIED, ((JwtUser) userDetails).getVerificado());
-		claims.put(CLAIM_KEY_SESSION, mobileId);
-		
+		claims.put(CLAIM_KEY_SESSION, sessionId);
+
+		Base64.Decoder decoder = Base64.getDecoder();
+		System.out.println("jwt " + claims.get(CLAIM_KEY_SESSION) + " e " + BigInteger.valueOf(4538598827312500810L)
+				+ " xx " + new BigInteger("4538598827312500810").toByteArray() + " decode "
+				+ new BigInteger(decoder.decode("PvxXlj/3UEo=")));
+
 		final Date createdDate = new Date();
 		claims.put(CLAIM_KEY_CREATED, createdDate);
 
@@ -121,8 +130,12 @@ public class JwtTokenUtil implements Serializable {
 	private String doGenerateToken(Map<String, Object> claims) {
 		final Date createdDate = (Date) claims.get(CLAIM_KEY_CREATED);
 		final Date expirationDate = new Date(createdDate.getTime() + expiration * 1000);
-		return Jwts.builder().setClaims(claims).setExpiration(expirationDate).signWith(SignatureAlgorithm.HS512, secret)
-				.compact();
+		try {
+			return Jwts.builder().setClaims(claims).setExpiration(expirationDate).setHeaderParam("typ", "JWT")
+					.signWith(SignatureAlgorithm.HS512, secret.getBytes("UTF-8")).compact();
+		} catch (UnsupportedEncodingException e) {
+			throw new AssertionError("UTF-8 not supported");
+		}
 	}
 
 	public Boolean canTokenBeRefreshed(String token) {
@@ -145,19 +158,14 @@ public class JwtTokenUtil implements Serializable {
 	public Authentication getAuthentication(String token) throws JsonParseException, JsonMappingException, IOException {
 		Claims claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
 
-        final Collection<? extends GrantedAuthority> authorities =
-                Arrays.stream(claims.get(CLAIM_KEY_PASS).toString().split(","))
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
-        
-        System.out.println(claims.get(CLAIM_KEY_PASS).toString());
-		JwtUser user = new JwtUser (
-        		Long.parseLong(claims.getSubject()),
-        		Boolean.parseBoolean(claims.get(CLAIM_KEY_VERIFIED).toString()),
-        		claims.get(CLAIM_KEY_USERNAME).toString(),
-        		claims.get(CLAIM_KEY_SESSION).toString(),
-        		authorities
-        		);
+		final Collection<? extends GrantedAuthority> authorities = Arrays
+				.stream(claims.get(CLAIM_KEY_PASS).toString().split(",")).map(SimpleGrantedAuthority::new)
+				.collect(Collectors.toList());
+
+		System.out.println(claims.get(CLAIM_KEY_PASS).toString());
+		JwtUser user = new JwtUser(Long.parseLong(claims.getSubject()),
+				Boolean.parseBoolean(claims.get(CLAIM_KEY_VERIFIED).toString()),
+				claims.get(CLAIM_KEY_USERNAME).toString(), claims.get(CLAIM_KEY_SESSION).toString(), authorities);
 
 		return new UsernamePasswordAuthenticationToken(user, "", user.getAuthorities());
 	}
@@ -166,18 +174,17 @@ public class JwtTokenUtil implements Serializable {
 		try {
 			Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
 			return true;
-		} catch (SignatureException ex) {
-			log.error("Invalid JWT signature");
-		} catch (MalformedJwtException ex) {
-			log.error("Invalid JWT token");
-		} catch (ExpiredJwtException ex) {
-			log.error("Expired JWT token");
-		} catch (UnsupportedJwtException ex) {
-			log.error("Unsupported JWT token");
-		} catch (IllegalArgumentException ex) {
-			log.error("JWT claims string is empty.");
+		} catch (ExpiredJwtException exception) {
+			log.warn("Request to parse expired JWT : {} failed : {}", token, exception.getMessage());
+		} catch (UnsupportedJwtException exception) {
+			log.warn("Request to parse unsupported JWT : {} failed : {}", token, exception.getMessage());
+		} catch (MalformedJwtException exception) {
+			log.warn("Request to parse invalid JWT : {} failed : {}", token, exception.getMessage());
+		} catch (SignatureException exception) {
+			log.warn("Request to parse JWT with invalid signature : {} failed : {}", token, exception.getMessage());
+		} catch (IllegalArgumentException exception) {
+			log.warn("Request to parse empty or null JWT : {} failed : {}", token, exception.getMessage());
 		}
 		return false;
 	}
 }
-	

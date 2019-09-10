@@ -1,6 +1,8 @@
 package br.app.adv.main.security.account;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,6 +19,7 @@ import br.app.adv.main.person.adv.AdvogadoUser;
 import br.app.adv.main.person.adv.AdvogadoUserDAO;
 import br.app.adv.main.person.client.ClientUser;
 import br.app.adv.main.person.client.ClientUserDAO;
+import br.app.adv.main.security.auth.AuthRoles;
 import br.app.adv.main.security.auth.AuthRolesService;
 
 /** 
@@ -32,6 +35,7 @@ public class AccountCadastro implements Serializable{
 	@Autowired private AdvogadoUserDAO advDAO;
 	@Autowired private ClientUserDAO clientDAO;
 	@Autowired private AuthRolesService authRoleService;
+	@Autowired private AccountMain accountMain;
 	
 	public String validarPersonMediaSocial(Person p, PersonTypeEnum tipoUser, String email) throws InvalidValueSqlException {
 		Person person = new Person();
@@ -64,50 +68,61 @@ public class AccountCadastro implements Serializable{
 		}
 	}
 	private void cadastrar(Person p, PersonTypeEnum tipoUser) {
+		Person person = new Person();
+		List<AuthRoles> auth = new ArrayList<>();
+		p.setSenha(this.accountMain.encriptyPass(p.getSenha()));
+		person = this.personService.salvarPessoa(p);
+		System.out.println("pessoa "+person.getEmail());
+		this.clientDAO.save(new ClientUser(person));
+
 		switch (tipoUser) {
 		case ADVOGADO:
-			this.advogadoCad(p);
+			this.advDAO.save(new AdvogadoUser(person));
+			auth.add(this.authRoleService.roleAdvogado(person));
 			break;
 		case CLIENTE:
-			this.clientCad(p);
+			auth.add(this.authRoleService.roleUser(person));
 			break;
 		default:
 			break;
-		}		
+		}	
+		auth.add(this.authRoleService.roleClient(person));
+		this.authRoleService.saveAll(auth);
 	}
 
 	private AdvogadoUser advogadoCad(Person p) {
 		AdvogadoUser adv = new AdvogadoUser();
-		//person = this.personService.setSalvarPessoa(p);
-		p.setSenha(this.encriptyPass(p.getSenha()));
-		adv.setPessoa(p);
-		adv = this.advDAO.save(adv);
 		try {
-			p.getAuthRole().addAll(this.authRoleService.adicionarRoles(PersonTypeEnum.ADVOGADO, adv.getPessoa()));
+			p.setSenha(this.accountMain.encriptyPass(p.getSenha()));
+			adv.setPessoa(p);
+			adv = this.advDAO.save(adv);
+			p.getAuthRole().add(this.authRoleService.roleClient(adv.getPessoa()));
+			p.getAuthRole().add(this.authRoleService.roleAdvogado(adv.getPessoa()));
+			adv.setPessoa(p);
+			adv = this.advDAO.save(adv);	
 		} catch (Exception e) {
 			this.advDAO.delete(adv);
 		}
+
 		return adv;
 	}
 	
 	private ClientUser clientCad(Person p) {
 		ClientUser client = new ClientUser();
-		//person = this.personService.setSalvarPessoa(p);
-		p.setSenha(this.encriptyPass(p.getSenha()));
-		client.setPessoa(p);
-		log.debug("clientCad - Inseri um novo elemento client no BD");
-		client = this.clientDAO.save(client);
-		log.debug("clientCad - Set roleAuth na Class Person");
 		try {
-			p.getAuthRole().addAll(this.authRoleService.adicionarRoles(PersonTypeEnum.CLIENTE, client.getPessoa()));
+			p.setSenha(this.accountMain.encriptyPass(p.getSenha()));
+			client.setPessoa(p);
+			log.debug("clientCad - Inseri um novo elemento client no BD");
+			client = this.clientDAO.save(client);
+			log.debug("clientCad - Inseri as roles do client no BD");
+			p.getAuthRole().add(this.authRoleService.roleUser(client.getPessoa()));
+			p.getAuthRole().add(this.authRoleService.roleClient(client.getPessoa()));
+			client.setPessoa(p);
+			client = this.clientDAO.save(client);
 		} catch (Exception e) {
 			this.clientDAO.delete(client);
 		}
-		return client;
-	}
 
-	private String encriptyPass(String senha) {
-		BCryptPasswordEncoder bc = new BCryptPasswordEncoder();
-		return bc.encode(senha);
+		return client;
 	}
 }

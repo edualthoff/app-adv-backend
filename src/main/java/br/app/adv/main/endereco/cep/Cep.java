@@ -26,7 +26,7 @@ public class Cep implements Serializable {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="cep_id")
-	private long id;
+	private Long id;
 	
 	@Column(name="logradouro")
 	private String logradouro;
@@ -73,7 +73,7 @@ public class Cep implements Serializable {
 		this.cidade = cidade;
 	}
 
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
 }

@@ -8,13 +8,16 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -32,11 +35,13 @@ import br.app.adv.main.person.Person;
 @JsonIgnoreProperties(value = {"dataUpdate", "dataSession"}, allowGetters = true)
 @EntityListeners(AuditingEntityListener.class)
 public class ClientUser implements Serializable {
-	private static final long serialVersionUID = 6548763010794865554L;
+	private static final long serialVersionUID = -1771612489433526467L;
 
 	@Id
-	@Column(name="pessoa_id_pessoa", nullable = false)
-	private long id;
+	@Column(name="pessoa_id", nullable = false, unique = true)
+	@GeneratedValue(generator = "foreign")
+	@GenericGenerator(name = "foreign", strategy = "foreign", parameters =  @Parameter(name = "property", value = "pessoa"))
+	private Long id;
 	
 	@Column(name="rate")
 	private int rate;
@@ -44,8 +49,9 @@ public class ClientUser implements Serializable {
 	@OneToOne(mappedBy="idPk.clientUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private EnderecoClient endereco;
 	
-	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "pessoa_id_pessoa", referencedColumnName = "pessoa_id")
+	@OneToOne(cascade = {CascadeType.MERGE, CascadeType.REMOVE, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+    //@JoinColumn(name = "pessoa_id",  referencedColumnName = "pessoa_id")
+    @PrimaryKeyJoinColumn(name="pessoa_id", referencedColumnName = "pessoa_id")
 	private Person pessoa;
 	
 	@Column(name="data_update", updatable = false)
@@ -57,6 +63,23 @@ public class ClientUser implements Serializable {
 	@Temporal(TemporalType.TIMESTAMP)
 	@CreatedDate
 	private Date dataCreated;
+
+
+	public ClientUser() {
+		super();
+	}
+	
+	
+	public ClientUser(Person pessoa) {
+		super();
+		this.pessoa = pessoa;
+	}
+
+
+	public ClientUser(Long id) {
+		super();
+		this.id = id;
+	}
 
 	public int getRate() {
 		return rate;
@@ -77,8 +100,15 @@ public class ClientUser implements Serializable {
 	public Date getDataCreated() {
 		return dataCreated;
 	}
-	public long getId() {
+	public Date getDataUpdate() {
+		return dataUpdate;
+	}
+	public Long getId() {
 		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	public Person getPessoa() {
@@ -88,29 +118,21 @@ public class ClientUser implements Serializable {
 	public void setPessoa(Person pessoa) {
 		this.pessoa = pessoa;
 	}
-	
-	public Date getDataUpdate() {
-		return dataUpdate;
-	}
-
-	public void setId(long id) {
-		this.id = id;
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime * result + ((dataCreated == null) ? 0 : dataCreated.hashCode());
-		result = prime * result + (int) (id ^ (id >>> 32));
+		result = prime * result + ((dataUpdate == null) ? 0 : dataUpdate.hashCode());
+		result = prime * result + ((endereco == null) ? 0 : endereco.hashCode());
+		result = prime * result + rate;
 		return result;
 	}
-
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
@@ -120,7 +142,17 @@ public class ClientUser implements Serializable {
 				return false;
 		} else if (!dataCreated.equals(other.dataCreated))
 			return false;
-		if (id != other.id)
+		if (dataUpdate == null) {
+			if (other.dataUpdate != null)
+				return false;
+		} else if (!dataUpdate.equals(other.dataUpdate))
+			return false;
+		if (endereco == null) {
+			if (other.endereco != null)
+				return false;
+		} else if (!endereco.equals(other.endereco))
+			return false;
+		if (rate != other.rate)
 			return false;
 		return true;
 	}	

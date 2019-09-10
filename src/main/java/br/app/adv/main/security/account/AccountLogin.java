@@ -40,9 +40,7 @@ public class AccountLogin implements Serializable {
 	 * gera o currentUSer -- class responsavel por retornar as info pro FrontEnd
 	 */
 	public String loginUsername(String email) {
-		logger.info(
-				"Implemtna o CurrentUser e gera o Token, login realizado com o User e Password.. Email do Usuario {}",
-				email);
+		logger.debug("Implemtna o CurrentUser e gera o Token, login realizado com o User e Password.. Email do Usuario {}", email);
 		if ((email != null)) {
 			return email;
 		}
@@ -76,7 +74,7 @@ public class AccountLogin implements Serializable {
 					p.setImagemPerfil(fileS.baixarArquivoUrl("jpg", "photo.jpg", socialM.getUrlImagem()));
 					// p.setData_nasc(new
 					// SimpleDateFormat("MM/dd/yyyy").parse(socialM.getNiverData()));
-					this.personService.setSalvarPessoa(p);
+					this.personService.salvarPessoa(p);
 					final AuthMediaSocial authMS2 = new AuthMediaSocial();
 					authMS2.setTipo(mediaSocial);
 					authMS2.setPessoa(p);

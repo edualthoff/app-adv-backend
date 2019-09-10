@@ -31,12 +31,12 @@ import br.app.adv.main.person.Person;
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 @EntityListeners(AuditingEntityListener.class)
 public class AuthSessionActive implements Serializable{
-	private static final long serialVersionUID = 4316819109874360119L;
+	private static final long serialVersionUID = 3613800394541729197L;
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="session_id")
-	private long id;
+	private Long id;
 	
 	@Column(name="mobile_id")
 	private String mobileId;
@@ -88,7 +88,7 @@ public class AuthSessionActive implements Serializable{
 		this.person = person;
 	}
 
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
 	public String getModelo() {

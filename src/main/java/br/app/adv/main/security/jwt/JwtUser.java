@@ -9,16 +9,16 @@ import org.springframework.security.core.userdetails.UserDetails;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class JwtUser  implements UserDetails {
-	private static final long serialVersionUID = 160501951776060243L;
-	
-	private long id;
+	private static final long serialVersionUID = 2268591283036764355L;
+
+	private Long id;
 	private String username;
 	private String password;
 	private boolean verificado;
 	private String session;
 	private Collection<? extends GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
 	
-	public JwtUser(long id, boolean verificado, String username, String session,
+	public JwtUser(Long id, boolean verificado, String username, String session,
 			Collection<? extends GrantedAuthority> authorities) {
 		this.id = id;
 		this.username = username;
@@ -27,7 +27,7 @@ public class JwtUser  implements UserDetails {
 		this.authorities = authorities;
 	}
 	
-	public JwtUser(long id, String username, String password, boolean verificado , Collection<? extends GrantedAuthority> authorities) {
+	public JwtUser(Long id, String username, String password, boolean verificado , Collection<? extends GrantedAuthority> authorities) {
 		this.id = id;
 		this.username = username;
 		this.password = password;
@@ -36,7 +36,7 @@ public class JwtUser  implements UserDetails {
 	}
 
 	@JsonIgnore
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
 
